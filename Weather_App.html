@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Weather App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-control {
+            border: 1px solid #ccc;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            border: none;
+        }
+
+        .card {
+            position: relative;
+
+        }
+
+        #cros {
+            font-size: 40px;
+            position: absolute;
+            right: 10px !important;
+            top: -5px !important;
+            cursor: pointer;
+        }
+
+        .carcontainer {
+            flex-flow: wrap;
+        }
+
+        #ctrname {
+            margin-left: 5px;
+            background-color: red;
+            color: white;
+            padding: 6px;
+            border-radius: 90px;
+            font-size: 10px;
+            text-shadow: 1px 1px 0 #ffff00;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form action="" id="form">
+            <div class="row py-3">
+                <div class="col-lg-12 text-center">
+                    <h3 class="pb-4">Check Your City Weather</h3>
+                </div>
+                <span class="text-danger mb-1 fw-bold" id="error"></span>
+                <div class="col-lg-3">
+
+                    <input type="text" name="cityanme" class=" form-control" placeholder="Enter city name">
+                </div>
+                <div class="col-lg-3">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+
+
+            </div>
+        </form>
+        <div class="container">
+            <div class="row mt-4 d-flex py-4 ">
+                <div class="carcontainer d-flex">
+                    <!-- content is heare -->
+                    
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let form = document.querySelector("#form");
+    var store = document.querySelector(".carcontainer");
+    var errorm = document.querySelector("#error");
+
+
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        var cityname = event.target.cityanme.value;
+
+        let apiurl = `https://api.openweathermap.org/data/2.5/weather?q=${cityname}&appid=4d8fb5b93d4af21d66a2948710284366&units=metric`;
+
+        let f = await fetch(apiurl);
+        let jsonc = await f.json();
+
+        if (jsonc.cod === '404') {
+            errorm.innerHTML = jsonc.message;
+        }
+
+        let { main, name, sys, weather, icon, visibility, cid } = jsonc;
+        let des = weather[0].description;
+
+        let card = {
+            name: `${name}`,
+            ct: `${sys.country}`,
+            feelsLike: `${main.feels_like}&deg;C`,
+            description: des,
+            icon: `https://openweathermap.org/img/w/${weather[0].icon}.png`,
+            visibility: `${visibility} meters`,
+            sunrise: new Date(sys.sunrise * 1000).toLocaleTimeString(),
+            sunset: new Date(sys.sunset * 1000).toLocaleTimeString(),
+        };
+
+        cardData = JSON.parse(localStorage.getItem("cards")) ?? [];
+        cardData.push(card);
+
+        localStorage.setItem("cards", JSON.stringify(cardData));
+        display();
+
+    });
+
+
+
+    var display = () => {
+        cardData = JSON.parse(localStorage.getItem("cards")) ?? [];
+        store.innerHTML = "";
+        cardData.forEach((element, index) => {
+          
+            store.innerHTML += `
+            <div class="col-lg-3  mx-4">
+            <div class="card mx-2 my-2"  style="width: 18rem;">
+                <span id="cros" onclick = 'deleter(${index})'>&times;</span>
+                <div class="card-body text-center">
+                    <h5 class="card-title">${element.name} <span id ="ctrname">${element.ct}</span></h5>
+                    <p class="card-text">Feels Like: ${element.feelsLike}</p>
+                    <div class="d-flex align-self-center text-center justify-content-center align-items-center">
+                        <p class="card-text">${element.description}</p>
+                        <img src="${element.icon}" alt="Weather Icon" class="weather-icon">
+                    </div>
+                    <p class="card-text">Visibility: ${element.visibility} meters</p>
+                    <p class="card-text">Sunrise: ${element.sunrise}</p>
+                    <p class="card-text">Sunset: ${element.sunset}</p>
+
+                </div>
+            </div>  
+        </div>`;
+
+        });
+    };
+
+    display();
+
+    function deleter(index){
+
+        cardData = JSON.parse(localStorage.getItem("cards")) ?? [];
+        confirm("delete this item");
+        cardData.splice(index,1);
+        localStorage.setItem("cards", JSON.stringify(cardData));
+        display();
+       
+    }
+
+
+
+
+
+</script>
+
+</html>
